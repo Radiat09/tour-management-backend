@@ -1,6 +1,5 @@
 import { model, Schema } from "mongoose";
 import { IAuthProvider, IsActive, IUser, Role } from "./user.interface";
-import { boolean } from "zod";
 
 const authProviderSchema = new Schema<IAuthProvider>(
   {
@@ -56,8 +55,8 @@ const userSchema = new Schema<IUser>(
       enum: Object.values(IsActive),
       default: IsActive.ACTIVE,
     },
-    isverified: {
-      type: boolean,
+    isVerified: {
+      type: Boolean,
       default: false,
     },
     auths: [authProviderSchema],
