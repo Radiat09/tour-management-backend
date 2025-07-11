@@ -4,6 +4,7 @@ import { envVars } from "../../config/env";
 import { IUser } from "../user/user.interface";
 import { User } from "../user/user.model";
 import { AppError } from "../../errorHelpers/AppError";
+import { generateToken } from "../../utils/jwt";
 
 const credentialsLogin = async (payload: Partial<IUser>) => {
   const { email, password } = payload;
