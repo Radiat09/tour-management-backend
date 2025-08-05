@@ -72,13 +72,15 @@ const createTourType = catchAsync(async (req: Request, res: Response) => {
 });
 
 const updateTourType = catchAsync(async (req: Request, res: Response) => {
-  const { id } = req.params;
-  const { name } = req.body;
-  const result = await TourService.updateTourType(id, name);
+  const payload: ITour = {
+    ...req.body,
+    images: (req.files as Express.Multer.File[]).map((file) => file.path),
+  };
+  const result = await TourService.updateTour(req.params?.id, payload);
   sendResponse(res, {
     statusCode: 200,
     success: true,
-    message: "Tour type updated successfully",
+    message: "Tour updated successfully",
     data: result,
   });
 });
