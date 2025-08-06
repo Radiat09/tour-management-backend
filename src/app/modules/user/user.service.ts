@@ -1,12 +1,14 @@
+import bcryptjs from "bcryptjs";
+import httpStatus from "http-status-codes";
+import { JwtPayload } from "jsonwebtoken";
 import { envVars } from "../../config/env";
-import { AppError } from "../../errorHelpers/AppError";
+import { QueryBuilder } from "../../utils/QueryBuilder";
+import { userSearchableFields } from "./user.constant";
 import { IAuthProvider, IUser, Role } from "./user.interface";
 import { User } from "./user.model";
-import httpStatus from "http-status-codes";
-import bcryptjs from "bcryptjs";
-import { JwtPayload } from "jsonwebtoken";
+import { AppError } from "../../errorHelpers/AppError";
 
-const createUserService = async (payload: Partial<IUser>) => {
+const createUser = async (payload: Partial<IUser>) => {
   const { email, password, ...rest } = payload;
 
   const isUserExist = await User.findOne({ email });
@@ -33,19 +35,6 @@ const createUserService = async (payload: Partial<IUser>) => {
   });
 
   return user;
-};
-
-const getAllUsers = async () => {
-  const users = await User.find({});
-
-  const totalUsers = await User.countDocuments();
-
-  return {
-    data: users,
-    meta: {
-      total: totalUsers,
-    },
-  };
 };
 
 const updateUser = async (
@@ -99,8 +88,42 @@ const updateUser = async (
   return newUpdatedUser;
 };
 
+const getAllUsers = async (query: Record<string, string>) => {
+  const queryBuilder = new QueryBuilder(User.find(), query);
+  const usersData = queryBuilder
+    .filter()
+    .search(userSearchableFields)
+    .sort()
+    .fields()
+    .paginate();
+
+  const [data, meta] = await Promise.all([
+    usersData.build(),
+    queryBuilder.getMeta(),
+  ]);
+
+  return {
+    data,
+    meta,
+  };
+};
+const getSingleUser = async (id: string) => {
+  const user = await User.findById(id).select("-password");
+  return {
+    data: user,
+  };
+};
+const getMe = async (userId: string) => {
+  const user = await User.findById(userId).select("-password");
+  return {
+    data: user,
+  };
+};
+
 export const UserServices = {
-  createUserService,
+  createUser,
   getAllUsers,
+  getSingleUser,
   updateUser,
+  getMe,
 };
